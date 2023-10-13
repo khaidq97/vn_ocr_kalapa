@@ -1,0 +1,1 @@
+# Vietnamese Handwritten Text Recognition - Kalapa challenge
