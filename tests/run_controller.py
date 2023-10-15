@@ -16,9 +16,9 @@ def run(controller, data_path, save_dir, logger):
         start_time = time.time()
         answer = controller(img)
         end_time = time.time()
-        logger.info(f'{i+1}|{len(imgs_path)}|Inference time: {end_time - start_time} s')
+        logger.info(f'{i+1}|{len(imgs_path)}|img:{img_path.name}|ans:{answer}|Inference time: {end_time - start_time} s')
         id = img_path.parent.name + '/' + img_path.name
-        df_submitssion = df_submitssion.append({'id': id, 'answer': answer}, ignore_index=True)
+        df_submitssion.loc[i] = [id, answer]
         
     df_submitssion.to_csv(Path(save_dir)/'submission.csv', index=False)
 
