@@ -7,3 +7,6 @@ ini_config = Config(RepositoryIni(INI_FILE))
 
 OCR_MODEL_PATH = ini_config('OCR_MODEL_PATH', cast=str,
                            default=os.path.join(root_dir, 'trained_models', 'seg2seg.pth'))
+
+TEXT_DETECT_MODEL_PATH = ini_config('TEXT_DETECT_MODEL_PATH', cast=str,
+                           default=os.path.join(root_dir, 'trained_models', 'best.onnx'))

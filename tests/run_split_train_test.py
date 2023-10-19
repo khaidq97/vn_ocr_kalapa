@@ -8,7 +8,7 @@ def run(data_path, save_dir, train_ratio=0.9):
     save_dir = Path(save_dir)
     save_dir.mkdir(parents=True, exist_ok=True)
     
-    df = pd.DataFrame(columns=['name', 'text'])
+    df = pd.DataFrame(columns=['name', 'text', 'folder_id'])
     labels_file = list(Path(data_path).rglob('*.txt'))
     
     index = 0
@@ -20,7 +20,7 @@ def run(data_path, save_dir, train_ratio=0.9):
                 data = line.split('\t')
                 name = data[0].strip()
                 text = data[1].strip()
-                df.loc[index] = [name, text]
+                df.loc[index] = [name, text, int(name.split('/')[0])]
                 index += 1
     df.to_csv(str(save_dir/'data.csv'), index=False)
     train_df, test_df = train_test_split(df, train_size=train_ratio, random_state=64)
