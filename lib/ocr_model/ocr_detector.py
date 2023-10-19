@@ -1,4 +1,4 @@
-from .vietocr import VIETOCR
+from .vietocr_model import VIETOCR
 from ..configs import settings as cfg
 
 class OCRDetector:

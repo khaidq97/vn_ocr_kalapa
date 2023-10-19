@@ -15,7 +15,6 @@ data/
 *.jpg
 data_test/
 **.pkl
-**.csv
 **.pt 
 **.h5
 **/logs 
