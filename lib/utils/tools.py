@@ -2,6 +2,7 @@
 from pathlib import Path 
 import cv2
 import numpy as np
+from PIL import ImageFont, ImageDraw, Image
 
 SUFFIX = ('.jpg', '.png', '.jpeg', '.bmp', '.PNG', '.JPG', '.JPEG', '.BMP')
 
@@ -47,3 +48,39 @@ def img_to_transparent(img):
 def crop_img(img, box):
     x1, y1, x2, y2 = box
     return img.copy()[int(y1):int(y2), int(x1):int(x2)]
+
+def insert_text_to_background(text_img, bg_img, x, y):
+    """
+    Insert text image to background image
+    """
+    text_img = text_img.copy()
+    bg_img = bg_img.copy()
+    # text_img[:,:,:3][text_img[:,:,3]==255] = [255,255,255]
+    h, w = text_img.shape[:2]
+    new_h, new_w = bg_img[:h, x:w+x].shape[:2]
+    text_img = cv2.resize(text_img, (new_w, new_h))
+    # alpha_normalized = text_img[:, :, 3] / 255.0
+    
+    # img_temp = text_img[:, :, :3] * alpha_normalized[:, :, None]
+    # img_temp2 = bg_img[:h, x:w+x] * (1 - alpha_normalized[:, :, None])
+    # h_,w_ = img_temp.shape[:2]
+    # img_temp = cv2.resize(img_temp, (w_, h_))
+    
+    # bg_img[:h, x:w+x] = img_temp2 + img_temp
+    bg_img[:h, x:w+x][text_img[:,:,3]==255] = 0
+    return bg_img
+
+def put_utf8_text(img, text, 
+                  x=10, y=60, 
+                  font_size=40, 
+                  stroke_width=1,
+                  color=(255, 0, 0), 
+                  font_path='assets/couri.ttf'):
+    """
+    Put utf-8 text to image
+    """
+    font = ImageFont.truetype(font_path, font_size)
+    img_pil = Image.fromarray(img)
+    draw = ImageDraw.Draw(img_pil)
+    draw.text((x, y), text, font=font, fill=color, stroke_width=stroke_width)
+    return np.array(img_pil)

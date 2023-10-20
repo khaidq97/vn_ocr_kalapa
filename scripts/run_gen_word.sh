@@ -1,4 +1,4 @@
 export PYTHONPATH=.
 python3 tests/run_gen_word.py --input-type=folder \
-    --root-dir=/media/khaidq@kaopiz.local/hdd1/OCR/KALAPA_OCR_VN/data/training_data/images \
-    --data-file=/media/khaidq@kaopiz.local/hdd1/OCR/KALAPA_OCR_VN/v2/assets/data.csv 
+    --root-dir=/home/khai/Desktop/COMPETITIONS/vn_ocr_kalapa/data/training_data/images \
+    --data-file=/home/khai/Desktop/COMPETITIONS/vn_ocr_kalapa/assets/data.csv 
