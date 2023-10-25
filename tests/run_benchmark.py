@@ -21,7 +21,7 @@ def run(controller, data_file, imgs_path, logger):
         t = time.time() - start_time
         score = calculate_score(predict, label)
         accuracy = 1 if score == 1 else 0
-        logger.info(f'{i+1}|{len(df)}|img:{name}|label:{label}|predict:{predict}|score:{score}|acc:{accuracy}|time:{t}')
+        logger.info(f'{i+1}|{len(df)}|score:{score}|acc:{accuracy}|img:{name}|label:{label}|predict:{predict}|time:{t}')
         df_save.loc[i] = [name, label, predict, score, accuracy, t]
     logger.info(f'Accuracy: {df_save.accuracy.mean()}')
     logger.info(f'Average score: {df_save.score.mean()}')

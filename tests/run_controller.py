@@ -11,7 +11,7 @@ from lib.text_detect import TextDetector
 from lib.utils.tools import load_imgs_path, put_utf8_text
 from lib.utils.draw import draw
 
-def run(controller, text_detector, data_path, save_dir, logger):
+def run(controller, text_detector, data_path, save_dir, logger, text_detect):
     df_submitssion = pd.DataFrame(columns=['id', 'answer'])
     df_save = pd.DataFrame(columns=['id', 'predict', 'boxes', 'box==pred', 'time'])
     detect_dir = Path(save_dir)/'text_detect'
@@ -19,11 +19,15 @@ def run(controller, text_detector, data_path, save_dir, logger):
     imgs_path = load_imgs_path(data_path)
     for i, img_path in enumerate(imgs_path):
         img = cv2.imread(str(img_path))
+        debug_img = img.copy()
         start_time = time.time()
         answer = controller(img)
         end_time = time.time()
-        boxes = text_detector(img)
-        debug_img = draw(img, boxes=boxes)
+        if text_detect:
+            boxes = text_detector(img)
+            debug_img = draw(img, boxes=boxes)
+        else:
+            boxes = []
         canvas = 255*np.ones_like(debug_img)
         canvas = put_utf8_text(canvas, answer, y=0)
         debug_img = np.concatenate([debug_img, canvas], axis=0)
@@ -45,6 +49,7 @@ if __name__ == '__main__':
                       default='logs/controller')
     args.add_argument('--data-path', type=str,
                       default='path to data')
+    args.add_argument('--text-detect', action='store_true')
     args.add_argument('--name', type=str,
                       default='')
     
@@ -53,6 +58,7 @@ if __name__ == '__main__':
     log_dir = Path(cfg.log_dir)
     data_path = Path(cfg.data_path)
     name = str(cfg.name)
+    text_detect = cfg.text_detect
     
     # Log dict
     debug_dir = Path(log_dir)/ (name + '_' + datetime.datetime.now().strftime('%Y%m%d_%H%M'))
@@ -64,14 +70,15 @@ if __name__ == '__main__':
     
     # Test
     controller = Controller()
-    text_detector = TextDetector()
+    text_detector = TextDetector() if text_detect else None
     
     run(
         controller=controller,
         text_detector=text_detector,
         data_path=data_path,
         save_dir=debug_dir,
-        logger=logger
+        logger=logger,
+        text_detect=text_detect
     )
     
     
