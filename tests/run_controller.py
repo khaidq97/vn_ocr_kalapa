@@ -3,22 +3,35 @@ import pandas as pd
 import datetime
 from pathlib import Path 
 import cv2 
+import numpy as np
 import argparse 
 from lib.utils.logger import get_logger
 from lib.controller import Controller
-from lib.utils.tools import load_imgs_path
+from lib.utils.tools import load_imgs_path, put_utf8_text
+from lib.utils.draw import draw
 
 def run(controller, data_path, save_dir, logger):
     df_submitssion = pd.DataFrame(columns=['id', 'answer'])
+    debug_dir = save_dir / 'debug'
+    debug_dir.mkdir(parents=True, exist_ok=True)
     imgs_path = load_imgs_path(data_path)
     for i, img_path in enumerate(imgs_path):
         img = cv2.imread(str(img_path))
+        debug_img = img.copy()
         start_time = time.time()
         answer = controller(img)
         end_time = time.time()
-        logger.info(f'{i+1}|{len(imgs_path)}|Inference time: {end_time - start_time} s')
+        
+        canvas = 255*np.ones_like(debug_img)
+        canvas = put_utf8_text(canvas, answer, y=0)
+        debug_img = np.concatenate([debug_img, canvas], axis=0)
+        name = img_path.parent.name + '_' + img_path.stem
+        cv2.imwrite(str(debug_dir/ (name + img_path.suffix)), debug_img)
+        
+    
+        logger.info(f'{i+1}|{len(imgs_path)}|img:{img_path.name}|ans:{answer}|Inference time: {end_time - start_time} s')
         id = img_path.parent.name + '/' + img_path.name
-        df_submitssion = df_submitssion.append({'id': id, 'answer': answer}, ignore_index=True)
+        df_submitssion.loc[i] = [id, answer]
         
     df_submitssion.to_csv(Path(save_dir)/'submission.csv', index=False)
 
@@ -52,7 +65,7 @@ if __name__ == '__main__':
         controller=controller,
         data_path=data_path,
         save_dir=debug_dir,
-        logger=logger
+        logger=logger,
     )
     
     
