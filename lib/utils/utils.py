@@ -19,7 +19,7 @@ def resizePadding(img, width, height):
     ratio = 1.0*img_w/img_h
     new_w = int(desired_h*ratio)
     new_w = new_w if desired_w == None else min(desired_w, new_w)
-    img = img.resize((new_w, desired_h), Image.ANTIALIAS)
+    img = img.resize((new_w, desired_h), Image.LANCZOS)
 
     # padding image
     if desired_w != None and desired_w > new_w:

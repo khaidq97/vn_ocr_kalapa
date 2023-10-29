@@ -12,7 +12,7 @@ class CRNNModelONNX:
                  model_path,
                  vocab_path,
                  imgH=64,
-                 imgW=512,
+                 imgW=640,
                  device='cpu',
                  half=False):
         self.device = device
@@ -28,8 +28,10 @@ class CRNNModelONNX:
         self.input_names = self.session.get_inputs()[0].name
         
     def run(self, image):
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image = Image.fromarray(image)
+        if isinstance(image, np.ndarray):
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            image = Image.fromarray(image)
+        image = image.convert('L').convert('RGB')
         image = resizePadding(image, self.imgW, self.imgH)
         image = image.view(1, *image.size()).detach().cpu().numpy()
         if self.half:
