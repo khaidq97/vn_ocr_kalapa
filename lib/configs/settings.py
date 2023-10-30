@@ -12,3 +12,6 @@ OCR_MODEL_PATH = ini_config('OCR_MODEL_PATH', cast=str,
 
 OCR_VOCAB_PATH = ini_config('OCR_VOCAB_PATH', cast=str,
                             default=os.path.join(root_dir, 'trained_models', 'vocab.txt'))
+
+REGEX_CORRECTOR_DATA_PATH = ini_config('REGEX_CORRECTOR_DATA_PATH', cast=str,
+                            default=os.path.join(root_dir, 'trained_models', 'regex.csv'))

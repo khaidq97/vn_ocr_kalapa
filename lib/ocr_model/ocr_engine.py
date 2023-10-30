@@ -12,7 +12,7 @@ class CRNNModelONNX:
                  model_path,
                  vocab_path,
                  imgH=64,
-                 imgW=512,
+                 imgW=640,
                  device='cpu',
                  half=False):
         self.device = device
