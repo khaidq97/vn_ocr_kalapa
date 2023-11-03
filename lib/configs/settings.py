@@ -11,4 +11,7 @@ OCR_MODEL_PATH = ini_config('OCR_MODEL_PATH', cast=str,
                            default=os.path.join(root_dir, 'trained_models', 'model.onnx'))
 
 OCR_VOCAB_PATH = ini_config('OCR_VOCAB_PATH', cast=str,
-                            default=os.path.join(root_dir, 'trained_models', 'vocab.txt'))
+                            default=os.path.join(root_dir, 'assets', 'vocab_short.txt'))
+
+NGRAM_DATA_PATH = ini_config('NGRAM_DATA_PATH', cast=str,
+                            default=os.path.join(root_dir, 'assets', 'postcorrection.csv'))
