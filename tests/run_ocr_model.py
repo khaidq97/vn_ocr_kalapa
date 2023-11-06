@@ -28,7 +28,7 @@ def run(ocr_model, data_path, save_dir, logger):
         cv2.imwrite(str(debug_dir/ (name + img_path.suffix)), debug_img)
         
     
-        logger.info(f'{i+1}|{len(imgs_path)}|img:{img_path.name}|ans:{answer}|Inference time: {end_time - start_time} s')
+        logger.info(f'{i+1}|{len(imgs_path)}|{img_path.name}|{answer}|Inference time: {end_time - start_time} s')
         id = img_path.parent.name + '/' + img_path.name
         df_submitssion.loc[i] = [id, answer]
         

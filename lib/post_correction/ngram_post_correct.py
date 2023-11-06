@@ -170,7 +170,7 @@ class NgramPostCorrector:
 if __name__ == '__main__':
     corrector  = NgramPostCorrector(data_path='/home/khai/Desktop/COMPETITIONS/vn_ocr_kalapa/vn_ocr_kalapa/assets/postcorrection.csv')
     
-    text = 'Trung Hải Gio Linh Quảng Trị'
+    text = 'Xóm D Lau Võ Miếu Thanh Sơn Phú Thọ'
    
     print(text)
     print(corrector.correct(text))
