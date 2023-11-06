@@ -13,6 +13,6 @@ class Controller:
         self.post_corrector = PostCorrector(cfg=cfg)
     
     def __call__(self, image):
-        result = self.ocr_engine.run(image)[0]
+        result = self.ocr_engine(image)
         result = self.post_corrector(result)
         return result

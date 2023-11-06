@@ -18,7 +18,7 @@ def run(ocr_model, data_path, save_dir, logger):
         img = cv2.imread(str(img_path))
         debug_img = img.copy()
         start_time = time.time()
-        answer = ocr_model.run(img)[0]
+        answer = ocr_model(img)
         end_time = time.time()
         
         canvas = 255*np.ones_like(debug_img)

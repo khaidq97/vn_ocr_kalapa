@@ -3,27 +3,42 @@ import pandas as pd
 import numpy as np
 from nltk.util import ngrams
 from fuzzywuzzy import fuzz
+from unidecode import unidecode
 
-def correct_sentence(sentence, 
+def has_number(input_str):
+    return any(char.isdigit() for char in input_str)
+
+def correct_sentence(sentences_list,
+                     sentences_tracking_list, 
                      correct_sentence,
                      threshold=70,
                      use_ngram_1=False):
     correct_sentence_list = correct_sentence.split()
     n_gram = len(correct_sentence_list)
     if not use_ngram_1 and n_gram < 2:
-        return sentence, []
+        return sentences_list, [], sentences_tracking_list
     
-    sentence_list = copy.deepcopy(sentence).split()
+    sentence_list = copy.deepcopy(sentences_list)
+    sentences_tracking_list_ = copy.deepcopy(sentences_tracking_list)
     n_gram_list = list(ngrams(sentence_list, n_gram))
     
     scores = []
+    indexs = []
     for i, data in enumerate(n_gram_list):
         text = ' '.join(data)
-        score = fuzz.ratio(text.lower(), correct_sentence.lower())
-        if score >= threshold:
-            sentence_list[i:i+n_gram] = correct_sentence_list
+        score = fuzz.ratio(unidecode(copy.deepcopy(text).lower()), unidecode(copy.deepcopy(correct_sentence).lower()))
+        if score >= threshold and sentences_tracking_list_[i] and not has_number(text):
             scores.append(score)
-    return ' '.join(sentence_list), scores
+            indexs.append(i)
+    score = 0
+    if len(indexs):
+        id = indexs[np.argmax(scores)]
+        score = max(scores)
+        
+        sentence_list[id:id+n_gram] = correct_sentence_list
+        sentences_tracking_list_[id:id+n_gram] = [False] * n_gram
+        
+    return sentence_list, [score], sentences_tracking_list_
 
 class Database:
     def __init__(self, data_path):
@@ -32,15 +47,20 @@ class Database:
         self.level2 = self.get_level2_list()
         self.level3 = self.get_level3_list()
         
-    def level1_to_level2_list(self, name):
+    def level1_to_level2_list(self, level_1):
         df = copy.deepcopy(self.df)
-        level2_list = df[df['level_1'] == name]['level_2'].unique().tolist()
+        level2_list = df[df['level_1'] == level_1]['level_2'].unique().tolist()
         return level2_list
     
-    def level2_to_level3_list(self, name):
+    def level2_to_level3_list(self, level_1, level_2):
         df = copy.deepcopy(self.df)
-        level3_list = df[df['level_2'] == name]['level_3'].unique().tolist()
+        level3_list = df.query(f'level_2 == @level_2 and level_1 == @level_1')['level_3'].unique().tolist()
         return level3_list
+    
+    def level3_to_level4_list(self, level_2, level_3):
+        df = copy.deepcopy(self.df)
+        level4_list = df.query(f'level_2 == @level_2 and level_3 == @level_3')['level_4'].unique().tolist()
+        return level4_list
     
     def level3_to_level1_level2(self, name):
         df = copy.deepcopy(self.df)
@@ -51,6 +71,11 @@ class Database:
     def level2_to_level3(self, name):
         df = copy.deepcopy(self.df)
         level3_list = df[df['level_2'] == name]['level_3'].unique().tolist()
+        return level3_list
+    
+    def level3_to_level4(self, name):
+        df = copy.deepcopy(self.df)
+        level3_list = df[df['level_3'] == name]['level_4'].unique().tolist()
         return level3_list
     
     def get_level1_list(self):
@@ -69,57 +94,83 @@ class Database:
         return level3_list
 
 class NgramPostCorrector:
-    def __init__(self, data_path, threshold=70):
+    def __init__(self, data_path, threshold=85):
         self.database = Database(data_path)
         self.threshold = threshold
         
     def correct(self, sentence):
+        sentences_list = sentence.split()
+        sentences_tracking_list = [True] * len(sentences_list)
         # check level 1
-        sentence, correct_text = self.correct_level(
-            sentence=sentence,
-            level_list=self.database.level1)
+        sentences_list, level_1, sentences_tracking_list = self.correct_level(
+                                                                            sentences_list=sentences_list,
+                                                                            sentences_tracking_list=sentences_tracking_list,
+                                                                            level_list=self.database.level1)
         # check level 2
-        if correct_text != '':
-            sentence, correct_text = self.correct_level(
-                sentence=sentence,
-                level_list=self.database.level1_to_level2_list(correct_text),
-                use_ngram_1=False)
+        level_2 = ''
+        if level_1 != '':
+            sentences_list, level_2, sentences_tracking_list = self.correct_level(
+                                                                        sentences_list=sentences_list,
+                                                                        sentences_tracking_list=sentences_tracking_list,
+                                                                        level_list=self.database.level1_to_level2_list(level_1))
+            # print(self.database.level1_to_level2_list(level_1), level_1)
+            # print(level_1)
         # check level 3
-        if correct_text != '':
-            sentence, correct_text = self.correct_level(
-                sentence=sentence,
-                level_list=self.database.level2_to_level3_list(correct_text))
-        return sentence
+        level_3 = ''
+        if level_2 != '':
+            sentences_list, level_3, sentences_tracking_list = self.correct_level(
+                                                                            sentences_list=sentences_list,
+                                                                            sentences_tracking_list=sentences_tracking_list,
+                                                                            level_list=self.database.level2_to_level3_list(level_1, level_2))
+            # print(self.database.level2_to_level3_list(level_1, level_2))
+            # print(level_1, level_2)
+        # check level 4
+        if level_3!='':
+            level_list = []
+            for x in self.database.level3_to_level4_list(level_2, level_3):
+                if isinstance(x, str):
+                    level_list.append(x)
+            # print(level_1, level_2, level_3, level_list)
+            if len(level_list):
+                sentences_list, level_4, sentences_tracking_list = self.correct_level(
+                                                                                    sentences_list=sentences_list,
+                                                                                    sentences_tracking_list=sentences_tracking_list,
+                                                                                    level_list=level_list)
+        return ' '.join(sentences_list)
         
-    def correct_level(self, sentence, level_list, use_ngram_1=False):
-        sentence_list, score_list, correct_text_list = [], [], []
+    def correct_level(self, sentences_list,sentences_tracking_list, level_list, use_ngram_1=False):
+        sentence_list, score_list, correct_text_list, sentences_tracking = [], [], [], []
         for i, level in enumerate(level_list):
-            sentence_, scores = correct_sentence(
-                sentence=sentence,
+            sentence_, scores, sentences_tracking_list_ = correct_sentence(
+                sentences_list=sentences_list,
+                sentences_tracking_list=sentences_tracking_list,
                 correct_sentence=level,
-                threshold=70,
+                threshold=75,
                 use_ngram_1=use_ngram_1)
             if len(scores) > 0:
                 sentence_list.append(sentence_)
                 score_list.append(max(scores))
                 correct_text_list.append(level)
+                sentences_tracking.append(sentences_tracking_list_)
         max_score = 0  
         correct_text = ''
+        sentence_tracking = sentences_tracking_list
+        sentence_list_ = sentences_list
         if len(score_list):
             max_id = np.argmax(score_list)
             max_score = score_list[max_id]
         if max_score>=self.threshold:
-            sentence = sentence_list[max_id]
+            sentence_list_ = sentence_list[max_id]
             correct_text = correct_text_list[max_id]
-        return sentence, correct_text
+            sentence_tracking = sentences_tracking[max_id]
+        return sentence_list_, correct_text, sentence_tracking
         
     
     
 if __name__ == '__main__':
-    # corrector  = NgramPostCorrector(data_path='data/sorted.csv')
-    corrector  = NgramPostCorrector(data_path='/media/khaidq@kaopiz.local/hdd1/OCR/KALAPA_OCR_VN/vn_ocr_kalapa/assets/postcorrection.csv')
+    corrector  = NgramPostCorrector(data_path='/home/khai/Desktop/COMPETITIONS/vn_ocr_kalapa/vn_ocr_kalapa/assets/postcorrection.csv')
     
-    text = 'Tấn Tài Tp Phan Rang Tháp Chàm Ninh Thuận'
+    text = 'Trung Hải Gio Linh Quảng Trị'
    
     print(text)
     print(corrector.correct(text))
