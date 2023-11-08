@@ -168,7 +168,7 @@ class NgramPostCorrector:
     
     
 if __name__ == '__main__':
-    corrector  = NgramPostCorrector(data_path='/home/khai/Desktop/COMPETITIONS/vn_ocr_kalapa/vn_ocr_kalapa/assets/postcorrection.csv')
+    corrector  = NgramPostCorrector(data_path='/media/khaidq@kaopiz.local/hdd1/OCR/KALAPA_OCR_VN/vn_ocr_kalapa/assets/postcorrection.csv')
     
     text = 'Xóm D Lau Võ Miếu Thanh Sơn Phú Thọ'
    

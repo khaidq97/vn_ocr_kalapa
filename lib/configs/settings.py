@@ -8,7 +8,7 @@ ini_config = Config(RepositoryIni(INI_FILE))
 DEVICE = ini_config('DEVICE', cast=str, default='cpu')
 
 OCR_MODEL_PATH = ini_config('OCR_MODEL_PATH', cast=str,
-                           default=os.path.join(root_dir, 'trained_models', 'best_model.onnx'))
+                           default=os.path.join(root_dir, 'assets', 'best_model.onnx'))
 
 OCR_VOCAB_PATH = ini_config('OCR_VOCAB_PATH', cast=str,
                             default=os.path.join(root_dir, 'assets', 'vocab_short.txt'))
