@@ -27,11 +27,11 @@ class CRNNModelONNX:
         self.output_names = [i.name for i in self.session.get_outputs()]
         self.input_names = self.session.get_inputs()[0].name
         
-    def run(self, image):
+    def __call__(self, image):
         if isinstance(image, np.ndarray):
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             image = Image.fromarray(image)
-        image = image.convert('L').convert('RGB')
+        image = image.convert('RGB')
         image = resizePadding(image, self.imgW, self.imgH)
         image = image.view(1, *image.size()).detach().cpu().numpy()
         if self.half:
@@ -47,4 +47,4 @@ class CRNNModelONNX:
         preds = preds.transpose(1, 0).contiguous().view(-1)
         preds_size = Variable(torch.IntTensor([preds.size(0)]))
         sim_pred = self.converter.decode(preds.data, preds_size.data, raw=False)
-        return sim_pred, sent_prob
+        return sim_pred
